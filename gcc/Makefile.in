@@ -70,11 +70,10 @@ program_transform_name := @program_transform_name@
 
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
-gcc_docdir = @srcdir@/doc
 
 # Directory where sources are, absolute.
 abs_srcdir = @abs_srcdir@
-abs_docdir = @abs_srcdir@/doc
+
 
 # Top build directory for this package, relative to here.
 top_builddir = .
@@ -109,9 +108,6 @@ VPATH = @srcdir@
 # are split between multiple directories and we would rather use one implicit
 # pattern rule for everything.
 # This vpath could be extended within the Make-lang fragments.
-
-vpath %.texi $(gcc_docdir)
-vpath %.texi $(gcc_docdir)/include
 
 # --------
 # UNSORTED
@@ -549,12 +545,6 @@ man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
 
-datarootdir = @datarootdir@
-docdir = @docdir@
-# Directory in which to build HTML
-build_htmldir = $(objdir)/HTML/gcc-$(version)
-# Directory in which to put HTML
-htmldir = @htmldir@
 
 # Whether we were configured with NLS.
 USE_NLS = @USE_NLS@
@@ -3807,185 +3797,6 @@ stmp-install-fixproto: fixproto
 #
 # Remake the info files.
 
-doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
-
-INFOFILES = doc/cpp.info doc/gcc.info doc/gccint.info \
-            doc/gccinstall.info doc/cppinternals.info
-
-info: $(INFOFILES) lang.info @GENINSRC@ srcinfo lang.srcinfo
-
-srcinfo: $(INFOFILES)
-	-cp -p $^ $(srcdir)/doc
-
-TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi		\
-	 gcc-common.texi gcc-vers.texi
-
-TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
-	 standards.texi invoke.texi extend.texi md.texi objc.texi	\
-	 gcov.texi trouble.texi bugreport.texi service.texi		\
-	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
-	 fdl.texi contrib.texi cppenv.texi cppopts.texi			\
-	 implement-c.texi arm-neon-intrinsics.texi
-
-TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
-	 contribute.texi makefile.texi configterms.texi options.texi	\
-	 portability.texi interface.texi passes.texi c-tree.texi	\
-	 rtl.texi md.texi tm.texi hostconfig.texi fragments.texi	\
-	 configfiles.texi collect2.texi headerdirs.texi funding.texi	\
-	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
-	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
-	 loop.texi generic.texi gimple.texi
-
-TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
-	 gcc-common.texi gcc-vers.texi
-
-TEXI_CPPINT_FILES = cppinternals.texi gcc-common.texi gcc-vers.texi
-
-# gcc-vers.texi is generated from the version files.
-gcc-vers.texi: $(BASEVER) $(DEVPHASE)
-	(echo "@set version-GCC $(BASEVER_c)"; \
-	 if [ "$(DEVPHASE_c)" = "experimental" ]; \
-	 then echo "@set DEVELOPMENT"; \
-	 else echo "@clear DEVELOPMENT"; \
-	 fi) > $@T
-	$(build_file_translate) echo @set srcdir $(abs_srcdir) >> $@T
-	if [ -n "$(PKGVERSION)" ]; then \
-	  echo "@set VERSION_PACKAGE $(PKGVERSION)" >> $@T; \
-	fi
-	echo "@set BUGURL $(BUGURL_TEXI)" >> $@T; \
-	mv -f $@T $@
-
-
-# The *.1, *.7, *.info, *.dvi, and *.pdf files are being generated from implicit
-# patterns.  To use them, put each of the specific targets with its
-# specific dependencies but no build commands.
-
-doc/cpp.info: $(TEXI_CPP_FILES)
-doc/gcc.info: $(TEXI_GCC_FILES)
-doc/gccint.info: $(TEXI_GCCINT_FILES)
-doc/cppinternals.info: $(TEXI_CPPINT_FILES)
-
-doc/%.info: %.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-		$(MAKEINFO) $(MAKEINFOFLAGS) -I . -I $(gcc_docdir) \
-			-I $(gcc_docdir)/include -o $@ $<; \
-	fi
-
-# Duplicate entry to handle renaming of gccinstall.info
-doc/gccinstall.info: $(TEXI_GCCINSTALL_FILES)
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
-			-I $(gcc_docdir)/include -o $@ $<; \
-	fi
-
-doc/cpp.dvi: $(TEXI_CPP_FILES)
-doc/gcc.dvi: $(TEXI_GCC_FILES)
-doc/gccint.dvi: $(TEXI_GCCINT_FILES)
-doc/cppinternals.dvi: $(TEXI_CPPINT_FILES)
-
-doc/cpp.pdf: $(TEXI_CPP_FILES)
-doc/gcc.pdf: $(TEXI_GCC_FILES)
-doc/gccint.pdf: $(TEXI_GCCINT_FILES)
-doc/cppinternals.pdf: $(TEXI_CPPINT_FILES)
-
-$(build_htmldir)/cpp/index.html: $(TEXI_CPP_FILES)
-$(build_htmldir)/gcc/index.html: $(TEXI_GCC_FILES)
-$(build_htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
-$(build_htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
-
-dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
-      doc/cppinternals.dvi lang.dvi
-
-doc/%.dvi: %.texi
-	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
-
-# Duplicate entry to handle renaming of gccinstall.dvi
-doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
-	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
-
-PDFFILES = doc/gcc.pdf doc/gccint.pdf doc/gccinstall.pdf doc/cpp.pdf \
-           doc/cppinternals.pdf
-
-pdf:: $(PDFFILES) lang.pdf
-
-doc/%.pdf: %.texi
-	$(TEXI2PDF) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
-
-# Duplicate entry to handle renaming of gccinstall.pdf
-doc/gccinstall.pdf: $(TEXI_GCCINSTALL_FILES)
-	$(TEXI2PDF) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
-
-# List the directories or single hmtl files which are installed by
-# install-html. The lang.html file triggers language fragments to build
-# html documentation. Installing language fragment documentation is not
-# yet supported.
-HTMLS_INSTALL=$(build_htmldir)/cpp $(build_htmldir)/gcc \
-       $(build_htmldir)/gccinstall $(build_htmldir)/gccint \
-       $(build_htmldir)/cppinternals
-
-# List the html file targets.
-HTMLS_BUILD=$(build_htmldir)/cpp/index.html $(build_htmldir)/gcc/index.html \
-       $(build_htmldir)/gccinstall/index.html $(build_htmldir)/gccint/index.html \
-       $(build_htmldir)/cppinternals/index.html lang.html
-
-html:: $(HTMLS_BUILD)
-
-$(build_htmldir)/%/index.html: %.texi
-	$(mkinstalldirs) $(@D)
-	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<
-
-# Duplicate entry to handle renaming of gccinstall
-$(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
-	$(mkinstalldirs) $(@D)
-	echo rm -f $(@D)/*
-	SOURCEDIR=$(abs_docdir) \
-	DESTDIR=$(@D) \
-	$(SHELL) $(srcdir)/doc/install.texi2html
-
-MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
-
-generated-manpages: man
-
-man: $(MANFILES) lang.man @GENINSRC@ srcman lang.srcman
-
-srcman: $(MANFILES)
-	-cp -p $^ $(srcdir)/doc
-
-doc/%.1: %.pod
-	$(STAMP) $@
-	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
-		mv -f $(@).T$$$$ $@) || \
-		(rm -f $(@).T$$$$ && exit 1)
-
-doc/%.7: %.pod
-	$(STAMP) $@
-	-($(POD2MAN) --section=7 $< > $(@).T$$$$ && \
-		mv -f $(@).T$$$$ $@) || \
-		(rm -f $(@).T$$$$ && exit 1)
-
-%.pod: %.texi
-	$(STAMP) $@
-	-$(TEXI2POD) -DBUGURL="$(BUGURL_TEXI)" $< > $@
-
-.INTERMEDIATE: cpp.pod gcc.pod gfdl.pod fsf-funding.pod
-cpp.pod: cpp.texi cppenv.texi cppopts.texi
-
-# These next rules exist because the output name is not the same as
-# the input name, so our implicit %.pod rule will not work.
-
-gcc.pod: invoke.texi cppenv.texi cppopts.texi
-	$(STAMP) $@
-	-$(TEXI2POD) $< > $@
-gfdl.pod: fdl.texi
-	$(STAMP) $@
-	-$(TEXI2POD) $< > $@
-fsf-funding.pod: funding.texi
-	$(STAMP) $@
-	-$(TEXI2POD) $< > $@
-gpl.pod: gpl_v3.texi
-	$(STAMP) $@
-	-$(TEXI2POD) $< > $@
 
 #
 # Deletion of files made during compilation.
@@ -4046,8 +3857,6 @@ clean: mostlyclean lang.clean
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
 	-rm -f options.c options.h optionlist
 	-rm -f cs-*
-	-rm -f doc/*.dvi
-	-rm -f doc/*.pdf
 # Delete the include directories.
 	-rm -rf include include-fixed
 # Delete files used by the "multilib" facility (including libgcc subdirs).
@@ -4089,7 +3898,6 @@ maintainer-clean:
 	$(MAKE) lang.maintainer-clean distclean
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
-	-rm -f $(gcc_docdir)/*.info $(gcc_docdir)/*.1 $(gcc_docdir)/*.7 $(gcc_docdir)/*.dvi $(gcc_docdir)/*.pdf
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -4181,91 +3989,6 @@ install-driver: installdirs xgcc$(exeext)
 	    mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	fi
 
-# Install the info files.
-# $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
-# to do the install.
-install-info:: doc installdirs \
-	$(DESTDIR)$(infodir)/cpp.info \
-	$(DESTDIR)$(infodir)/gcc.info \
-	$(DESTDIR)$(infodir)/cppinternals.info \
-	$(DESTDIR)$(infodir)/gccinstall.info \
-	$(DESTDIR)$(infodir)/gccint.info \
-	lang.install-info
-
-$(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
-	rm -f $@
-	if [ -f $< ]; then \
-	  for f in $(<)*; do \
-	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	    $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
-	    chmod a-x $(DESTDIR)$(infodir)/$$realfile; \
-	  done; \
-	else true; fi
-	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	  if [ -f $@ ]; then \
-	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $@; \
-	  else true; fi; \
-	else true; fi;
-
-pdf__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-
-install-pdf: $(PDFFILES) lang.install-pdf
-	@$(NORMAL_INSTALL)
-	test -z "$(pdfdir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
-	@list='$(PDFFILES)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(pdf__strip_dir) \
-	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
-	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
-	done
-
-html__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-
-install-html: $(HTMLS_BUILD)
-	@$(NORMAL_INSTALL)
-	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
-	@list='$(HTMLS_INSTALL)'; for p in $$list; do \
-	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
-	  f=$(html__strip_dir) \
-	  if test -d "$$d$$p"; then \
-	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
-	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
-	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
-	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
-	  else \
-	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
-	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
-	  fi; \
-	done
-
-# Install the man pages.
-install-man: lang.install-man \
-	$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext) \
-	$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext) \
-	$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext) \
-	$(DESTDIR)$(man7dir)/fsf-funding$(man7ext) \
-	$(DESTDIR)$(man7dir)/gfdl$(man7ext) \
-	$(DESTDIR)$(man7dir)/gpl$(man7ext)
-
-$(DESTDIR)$(man7dir)/%$(man7ext): doc/%.7 installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-	-chmod a-x $@
-
-$(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext): doc/gcc.1 installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-	-chmod a-x $@
-
-$(DESTDIR)$(man1dir)/$(CPP_INSTALL_NAME)$(man1ext): doc/cpp.1 installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-	-chmod a-x $@
-
-$(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1 installdirs
-	-rm -f $@
-	-$(INSTALL_DATA) $< $@
-	-chmod a-x $@
 
 # Install all the header files built in the include subdirectory.
 install-headers: $(INSTALL_HEADERS_DIR)
