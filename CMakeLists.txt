@@ -20,7 +20,7 @@ include_directories(../libiberty)
 
 
 
-#CFLAGS="-O0 -ggdb3 -fno-inline " CXXFLAGS="-O0 -ggdb3 -fno-inline " CFLAGS_FOR_BUILD="-O0 -ggdb3 -fno-inline " CFLAGS_FOR_TARGET="-O0 -ggdb3 -fno-inline " CXXFLAGS_FOR_BUILD="-O0 -ggdb3 -fno-inline " CXXFLAGS_FOR_TARGET="-O0 -ggdb3 -fno-inline " ../configure -v     --enable-languages=c    --disable-multilib  --enable-checking=release  --disable-plugin    --disable-libstdcxx-pch   --disable-bootstrap     --disable-lto   --disable-libada    --disable-gcov  --enable-threads=posix --with-system-zlib --disable-rpath  --disable-win32-registry  --disable-nls  --disable-werror  --disable-symvers  --disable-libvtv --disable-ssp --disable-libquadmath --disable-libgomp --disable-libquadmath-support --disable-libgcc --disable-libdecnumber --disable-libmudflap --disable-libssp
+#CFLAGS="-O0 -ggdb3 -fno-inline " CXXFLAGS="-O0 -ggdb3 -fno-inline " CFLAGS_FOR_BUILD="-O0 -ggdb3 -fno-inline " CFLAGS_FOR_TARGET="-O0 -ggdb3 -fno-inline " CXXFLAGS_FOR_BUILD="-O0 -ggdb3 -fno-inline " CXXFLAGS_FOR_TARGET="-O0 -ggdb3 -fno-inline " ../configure -v     --enable-languages=c    --disable-multilib  --enable-checking=release  --disable-plugin    --disable-libstdcxx-pch   --disable-bootstrap     --disable-lto   --disable-libada    --disable-gcov  --enable-threads=posix --with-system-zlib --disable-rpath  --disable-win32-registry  --disable-nls  --disable-werror  --disable-symvers  --disable-libvtv --disable-ssp --disable-libquadmath --disable-libgomp --disable-libquadmath-support --disable-libgcc --disable-libmudflap --disable-libssp --disable-libgomp
 
 
 file(GLOB GCC_SRCS
